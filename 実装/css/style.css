@@ -1,0 +1,161 @@
+:root {
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-text: #1f2328;
+  --color-muted: #6b7280;
+  --color-border: #d9dce1;
+  --color-primary: #2f6fed;
+  --color-a: #2f6fed;
+  --color-b: #e0622f;
+  --color-both: #2f9e6a;
+  --nav-height: 64px;
+  --header-height: 52px;
+  font-size: 18px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.app-header {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-header h1 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.view-root {
+  padding: 16px;
+  padding-bottom: calc(var(--nav-height) + 24px);
+  max-width: 720px;
+  margin: 0 auto;
+  min-height: calc(100vh - var(--header-height));
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  display: flex;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  z-index: 10;
+}
+
+.nav-btn {
+  flex: 1;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.nav-btn.active {
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+button {
+  font-family: inherit;
+}
+
+.month-group {
+  margin-bottom: 24px;
+}
+
+.month-group h2 {
+  font-size: 1.05rem;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}
+
+.tx-row {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.tx-row .tx-date {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.tx-row .tx-desc {
+  font-size: 1.05rem;
+  margin: 4px 0;
+  word-break: break-word;
+}
+
+.tx-row .tx-amount {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.tx-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tx-actions button {
+  flex: 1;
+  min-height: 48px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.tx-actions button.cat-A { border-color: var(--color-a); color: var(--color-a); }
+.tx-actions button.cat-B { border-color: var(--color-b); color: var(--color-b); }
+.tx-actions button.cat-BOTH { border-color: var(--color-both); color: var(--color-both); }
+
+.tx-row.focused {
+  outline: 3px solid var(--color-primary);
+}
+
+.badge-auto {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #fff;
+  background: var(--color-muted);
+  border-radius: 6px;
+  padding: 1px 6px;
+  margin-left: 6px;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--color-muted);
+  padding: 40px 0;
+}
