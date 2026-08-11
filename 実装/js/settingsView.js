@@ -1,6 +1,7 @@
 import { getAll, addRecord, putRecord, deleteRecord, clearStore } from './db.js';
 import { reapplyToUnassigned } from './autoRules.js';
-import { escapeHtml, formatTimestampForFilename, CATEGORY_LABELS } from './format.js';
+import { escapeHtml, formatTimestampForFilename, buildCategoryLabels } from './format.js';
+import { getPersonNames, setPersonNames } from './personNames.js';
 
 let containerRef = null;
 let message = null; // { text, type }
@@ -25,9 +26,14 @@ function formatTimestamp(iso) {
 }
 
 async function renderSettings() {
-  const [rules, settings] = await Promise.all([getAll('rules'), getAll('settings')]);
+  const [rules, settings, personNames] = await Promise.all([
+    getAll('rules'),
+    getAll('settings'),
+    getPersonNames(),
+  ]);
   rules.sort((a, b) => (a.priority - b.priority) || (a.id - b.id));
 
+  const categoryLabels = buildCategoryLabels(personNames);
   const lastBackup = settings.find((s) => s.key === 'lastBackupAt');
 
   containerRef.innerHTML = `
@@ -36,13 +42,22 @@ async function renderSettings() {
     ${message ? `<p class="${message.type === 'error' ? 'error-text' : 'success-text'}">${escapeHtml(message.text)}</p>` : ''}
 
     <section class="settings-section">
+      <h2>表示名</h2>
+      <form id="person-names-form" class="rule-form">
+        <input type="text" id="person-name-a" placeholder="Aさんの表示名" value="${escapeHtml(personNames.A)}">
+        <input type="text" id="person-name-b" placeholder="Bさんの表示名" value="${escapeHtml(personNames.B)}">
+        <button type="submit">保存</button>
+      </form>
+    </section>
+
+    <section class="settings-section">
       <h2>自動振り分けルール</h2>
       <form id="rule-form" class="rule-form">
         <input type="text" id="rule-keyword" placeholder="キーワード（例: セブン）" required>
         <select id="rule-category">
-          <option value="A">Aの支払い</option>
-          <option value="B">Bの支払い</option>
-          <option value="BOTH">二人で支払い</option>
+          <option value="A">${categoryLabels.A}</option>
+          <option value="B">${categoryLabels.B}</option>
+          <option value="BOTH">${categoryLabels.BOTH}</option>
         </select>
         <button type="submit">追加</button>
       </form>
@@ -52,7 +67,7 @@ async function renderSettings() {
           ${rules.map((r, i) => `
             <li class="rule-item ${r.enabled ? '' : 'rule-disabled'}">
               <div class="rule-info">
-                <span class="cat-tag cat-tag-${r.category}">${CATEGORY_LABELS[r.category]}</span>
+                <span class="cat-tag cat-tag-${r.category}">${categoryLabels[r.category]}</span>
                 <span class="rule-keyword">${escapeHtml(r.keyword)}</span>
               </div>
               <div class="rule-actions">
@@ -87,6 +102,7 @@ async function renderSettings() {
 }
 
 function attachHandlers() {
+  containerRef.querySelector('#person-names-form').addEventListener('submit', handlePersonNamesSubmit);
   containerRef.querySelector('#rule-form').addEventListener('submit', handleAddRule);
 
   containerRef.querySelectorAll('.rule-actions button').forEach((btn) => {
@@ -104,6 +120,16 @@ function attachHandlers() {
   containerRef.querySelector('#export-btn').addEventListener('click', handleExport);
   containerRef.querySelector('#import-file-input').addEventListener('change', handleImportFile);
   containerRef.querySelector('#delete-all-btn').addEventListener('click', handleDeleteAll);
+}
+
+async function handlePersonNamesSubmit(event) {
+  event.preventDefault();
+  const a = containerRef.querySelector('#person-name-a').value.trim();
+  const b = containerRef.querySelector('#person-name-b').value.trim();
+
+  await setPersonNames({ A: a, B: b });
+  showMessage('表示名を更新しました。', 'success');
+  renderSettings();
 }
 
 async function handleAddRule(event) {

@@ -1,10 +1,12 @@
 import { getAll, putRecord } from './db.js';
-import { escapeHtml, formatDateWithWeekday, formatYmHeading, formatAmount, groupByYearMonth, CATEGORY_LABELS } from './format.js';
+import { escapeHtml, formatDateWithWeekday, formatYmHeading, formatAmount, groupByYearMonth, buildCategoryLabels } from './format.js';
+import { getPersonNames } from './personNames.js';
 
 let containerRef = null;
 let currentList = [];
 let editingId = null;
 let filterYearMonth = null;
+let categoryLabels = buildCategoryLabels({ A: 'A', B: 'B' });
 
 function render(container, params) {
   containerRef = container;
@@ -16,6 +18,8 @@ function render(container, params) {
 function destroy() {}
 
 async function loadAndRender() {
+  categoryLabels = buildCategoryLabels(await getPersonNames());
+
   const all = await getAll('transactions');
   let list = all.filter((t) => t.category !== null);
   if (filterYearMonth) {
@@ -37,14 +41,14 @@ function renderTxRow(tx) {
       <div class="tx-desc">${escapeHtml(tx.description)}</div>
       <div class="tx-amount">${formatAmount(tx.amount)}</div>
       <div class="tx-category-label">
-        <span class="cat-tag cat-tag-${tx.category}">${CATEGORY_LABELS[tx.category]}</span>
+        <span class="cat-tag cat-tag-${tx.category}">${categoryLabels[tx.category]}</span>
         ${tx.isAuto ? '<span class="badge-auto">自動</span>' : ''}
       </div>
       ${isEditing ? `
         <div class="tx-actions">
-          <button type="button" class="cat-A" data-id="${tx.id}" data-category="A">Aの支払い</button>
-          <button type="button" class="cat-B" data-id="${tx.id}" data-category="B">Bの支払い</button>
-          <button type="button" class="cat-BOTH" data-id="${tx.id}" data-category="BOTH">二人で支払い</button>
+          <button type="button" class="cat-A" data-id="${tx.id}" data-category="A">${categoryLabels.A}</button>
+          <button type="button" class="cat-B" data-id="${tx.id}" data-category="B">${categoryLabels.B}</button>
+          <button type="button" class="cat-BOTH" data-id="${tx.id}" data-category="BOTH">${categoryLabels.BOTH}</button>
         </div>
       ` : ''}
     </div>

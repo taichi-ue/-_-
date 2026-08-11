@@ -20,7 +20,13 @@ function formatAmount(amount) {
   return `¥${amount.toLocaleString('ja-JP')}`;
 }
 
-const CATEGORY_LABELS = { A: 'Aの支払い', B: 'Bの支払い', BOTH: '二人で支払い' };
+function buildCategoryLabels(names) {
+  return {
+    A: `${names.A}の支払い`,
+    B: `${names.B}の支払い`,
+    BOTH: '二人で支払い',
+  };
+}
 
 function formatTimestampForFilename(d) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -47,5 +53,5 @@ export {
   formatAmount,
   formatTimestampForFilename,
   groupByYearMonth,
-  CATEGORY_LABELS,
+  buildCategoryLabels,
 };

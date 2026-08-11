@@ -1,13 +1,16 @@
 import { getAll } from './db.js';
-import { formatAmount, formatYmHeading, formatTimestampForFilename, CATEGORY_LABELS } from './format.js';
+import { formatAmount, formatYmHeading, formatTimestampForFilename, buildCategoryLabels } from './format.js';
 import { buildLineChartSvg } from './chart.js';
 import { navigateTo } from './router.js';
 import { buildCsv, downloadCsv } from './csvExport.js';
+import { getPersonNames } from './personNames.js';
 
 let containerRef = null;
 let monthlyData = new Map();
 let monthsAsc = [];
 let assignedList = [];
+let personNames = { A: 'A', B: 'B' };
+let categoryLabels = buildCategoryLabels(personNames);
 
 function render(container) {
   containerRef = container;
@@ -22,6 +25,9 @@ function formatYmShort(ym) {
 }
 
 async function loadAndRender() {
+  personNames = await getPersonNames();
+  categoryLabels = buildCategoryLabels(personNames);
+
   const all = await getAll('transactions');
   assignedList = all.filter((t) => t.category !== null);
 
@@ -75,11 +81,11 @@ async function loadAndRender() {
           <div class="highlight-sub">一人当たり ${formatAmount(Math.round(latest.BOTH / 2))}</div>
         </div>
         <div class="highlight-card highlight-a">
-          <div class="highlight-label">Aの合計</div>
+          <div class="highlight-label">${personNames.A}の合計</div>
           <div class="highlight-value">${formatAmount(latest.A)}</div>
         </div>
         <div class="highlight-card highlight-b">
-          <div class="highlight-label">Bの合計</div>
+          <div class="highlight-label">${personNames.B}の合計</div>
           <div class="highlight-value">${formatAmount(latest.B)}</div>
         </div>
       </div>
@@ -94,7 +100,7 @@ async function loadAndRender() {
       <h2>月別一覧（タップでその月の履歴を表示）</h2>
       <table class="report-table">
         <thead>
-          <tr><th>月</th><th>二人</th><th>A</th><th>B</th></tr>
+          <tr><th>月</th><th>二人</th><th>${personNames.A}</th><th>${personNames.B}</th></tr>
         </thead>
         <tbody>
           ${tableRows}
@@ -122,7 +128,7 @@ async function loadAndRender() {
 }
 
 function handleExportMonthlyCsv() {
-  const headers = ['年月', '二人の合計', '一人当たり', 'Aの合計', 'Bの合計'];
+  const headers = ['年月', '二人の合計', '一人当たり', `${personNames.A}の合計`, `${personNames.B}の合計`];
   const rows = monthsAsc.map((ym) => {
     const m = monthlyData.get(ym);
     return [ym, m.BOTH, Math.round(m.BOTH / 2), m.A, m.B];
@@ -139,7 +145,7 @@ function handleExportDetailCsv() {
     t.date,
     t.description,
     t.amount,
-    CATEGORY_LABELS[t.category],
+    categoryLabels[t.category],
     t.cardType,
     t.cardHolderName,
     t.isAuto ? '自動' : '手動',
